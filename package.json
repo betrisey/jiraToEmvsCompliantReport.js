@@ -1,0 +1,13 @@
+{
+  "name": "jira-to-emvs-compliant-report",
+  "version": "1.0.0",
+  "description": "Create an EMVS compliant report from your Jira worksheet",
+  "main": "app.js",
+  "scripts": {},
+  "author": "Samuel Bétrisey <samuel@sam.ninja>",
+  "dependencies": {
+    "cloudconvert": "^1.1.1",
+    "docxtemplater": "^2.0.0",
+    "moment": "^2.12.0"
+  }
+}
