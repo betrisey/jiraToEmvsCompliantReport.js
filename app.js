@@ -35,6 +35,8 @@ var req = https.request(httpOptions, (res) => {
     if (res.statusCode != 200) {
         console.error('Error while fetching the timesheet from Jira');
         console.log('HTTP '+res.statusCode);
+        
+        process.exit(1);
     }
     
     var data = '';
@@ -98,14 +100,17 @@ var toDocx = function(timesheet) {
     fs.writeFileSync(__dirname + '/' + config.info.filename + '.docx', buf);
     console.log('"'+config.info.filename + '.docx" generated');
     
-    fs.createReadStream(__dirname + '/' + config.info.filename + '.docx')
-        .pipe(cloudconvert.convert({
-            inputformat: 'docx',
-            outputformat: 'pdf'
-        }))
-        .pipe(fs.createWriteStream(__dirname + '/' + config.info.filename + '.pdf'))
-        .on('finish', function() {
-            console.log('"' + config.info.filename + '.pdf" generated');
-            process.exit();
-        });
+    if(config.login.cloudconvertKey)
+        fs.createReadStream(__dirname + '/' + config.info.filename + '.docx')
+            .pipe(cloudconvert.convert({
+                inputformat: 'docx',
+                outputformat: 'pdf'
+            }))
+            .pipe(fs.createWriteStream(__dirname + '/' + config.info.filename + '.pdf'))
+            .on('finish', function() {
+                console.log('"' + config.info.filename + '.pdf" generated');
+                process.exit();
+            });
+    else
+        process.exit();
 }
