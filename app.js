@@ -68,7 +68,7 @@ var toDocx = function(timesheet) {
             tasks.push({
                 date: moment(entry.startDate).format('DD.MM.YYYY'),
                 title: task.key.substr(0, task.key.indexOf('-')) + ' : ' + task.summary,
-                description: entry.comment,
+                description: entry.comment.split('\n').map((line) => {return {line: line}}),
                 //duration: moment.duration(entry.timeSpent*1000).humanize(),
                 duration: Math.floor(duration.asHours()) + 'h' + moment.utc(duration.asMilliseconds()).format("mm"),
                 responsible: config.info.companyResponsible,
@@ -82,7 +82,7 @@ var toDocx = function(timesheet) {
         tasks.push({
             date: date.format('DD.MM.YYYY'),
             title: task.title,
-            description: task.description,
+            description: task.description.split('\n').map((line) => {return {line: line}}),
             duration: task.duration,
             responsible: '',
             sortIndex: date.format('x')
