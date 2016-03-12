@@ -19,7 +19,7 @@ while (lastFriday.day() !== 5) {
 config.info.week = lastMonday.format('DD.MM.YYYY') + ' - ' + lastFriday.format('DD.MM.YYYY');
 config.info.lastFriday = lastFriday.format('DD.MM.YYYY');
 config.info.name = config.info.firstname + ' ' + config.info.lastname;
-config.info.filename = config.info.lastname + '_' + config.info.firstname + '_journal_' + lastFriday.format('YYYY MM YY') + '_' + config.info.company;
+config.info.filename = config.info.lastname + '_' + config.info.firstname + '_journal_' + lastFriday.format('YYYY MM DD') + '_' + config.info.company;
 
 var filter = '?startDate='+lastMonday.format('YYYY-MM-DD')+'&endDate='+lastFriday.format('YYYY-MM-DD');
 
