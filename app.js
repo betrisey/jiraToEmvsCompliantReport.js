@@ -1,21 +1,5 @@
-/* --------- CONFIG --------- */
-var config = {
-    login : {
-        username: '___',
-        password: '___',
-        server: '___.atlassian.net',
-        cloudconvertKey: '___'
-    },
-    info : {
-        firstname: '___',
-        lastname: '___',
-        company: '___',
-        stageInfo: '___',
-        companyResponsible: '___',
-        schoolResponsible: '___'
-    }
-}
-/* -------------------------- */
+var config = require('./config');
+
 const https = require('https');
 const moment = require('moment');
 const fs = require('fs');
@@ -52,6 +36,8 @@ var req = https.request(httpOptions, (res) => {
     if (res.statusCode != 200) {
         console.error('Error while fetching the timesheet from Jira');
         console.log('HTTP '+res.statusCode);
+        
+        process.exit(1);
     }
     
     var data = '';
@@ -92,6 +78,18 @@ var toDocx = function(timesheet) {
         });
     });
     
+    config.recurringTasks.forEach(function(task) {
+        var date = moment(lastMonday).add(task.day - 1, 'd');
+        tasks.push({
+            date: date.format('DD.MM.YYYY'),
+            title: task.title,
+            description: task.description,
+            duration: task.duration,
+            responsible: '',
+            sortIndex: date.format('x')
+        });
+    });
+    
     config.info.tasks = tasks.sort((a, b) => a.sortIndex - b.sortIndex);
     
     doc.setData(config.info);
@@ -103,14 +101,17 @@ var toDocx = function(timesheet) {
     fs.writeFileSync(__dirname + '/' + config.info.filename + '.docx', buf);
     console.log('"'+config.info.filename + '.docx" generated');
     
-    fs.createReadStream(__dirname + '/' + config.info.filename + '.docx')
-        .pipe(cloudconvert.convert({
-            inputformat: 'docx',
-            outputformat: 'pdf'
-        }))
-        .pipe(fs.createWriteStream(__dirname + '/' + config.info.filename + '.pdf'))
-        .on('finish', function() {
-            console.log('"' + config.info.filename + '.pdf" generated');
-            process.exit();
-        });
+    if(config.login.cloudconvertKey)
+        fs.createReadStream(__dirname + '/' + config.info.filename + '.docx')
+            .pipe(cloudconvert.convert({
+                inputformat: 'docx',
+                outputformat: 'pdf'
+            }))
+            .pipe(fs.createWriteStream(__dirname + '/' + config.info.filename + '.pdf'))
+            .on('finish', function() {
+                console.log('"' + config.info.filename + '.pdf" generated');
+                process.exit();
+            });
+    else
+        process.exit();
 }
