@@ -19,14 +19,14 @@ while (lastFriday.day() !== 5) {
 config.info.week = lastMonday.format('DD.MM.YYYY') + ' - ' + lastFriday.format('DD.MM.YYYY');
 config.info.lastFriday = lastFriday.format('DD.MM.YYYY');
 config.info.name = config.info.firstname + ' ' + config.info.lastname;
-config.info.filename = config.info.lastname + '_' + config.info.firstname + '_journal_' + lastFriday.format('YYYY MM DD') + '_' + config.info.company;
+config.info.filename = 'output/' + config.info.lastname + '_' + config.info.firstname + '_journal_' + lastFriday.format('YYYY MM DD') + '_' + config.info.company;
 
-var filter = '?startDate='+lastMonday.format('YYYY-MM-DD')+'&endDate='+lastFriday.format('YYYY-MM-DD');
+var filter = '?dateFrom='+lastMonday.format('YYYY-MM-DD')+'&dateTo='+lastFriday.format('YYYY-MM-DD');
 
 var httpOptions = {
     host: config.login.server,
     port: 443,
-    path: '/rest/timesheet-gadget/1.0/raw-timesheet.json' + filter,
+    path: '/rest/tempo-timesheets/3/worklogs'+ filter,
     method: 'GET',
     auth: config.login.username+':'+config.login.password
 };
@@ -61,19 +61,17 @@ var toDocx = function(timesheet) {
     
     var tasks = [];
     
-    timesheet.worklog.forEach(function(task) {
-        task.entries.forEach(function(entry) {
-            var duration = moment.duration(entry.timeSpent*1000);
+    timesheet.forEach(function(task) {
+            var duration = moment.duration(task.timeSpentSeconds*1000);
             
             tasks.push({
-                date: moment(entry.startDate).format('DD.MM.YYYY'),
-                title: task.key.substr(0, task.key.indexOf('-')) + ' : ' + task.summary,
-                description: entry.comment.split('\n').map((line) => {return {line: line}}),
-                //duration: moment.duration(entry.timeSpent*1000).humanize(),
-                duration: Math.floor(duration.asHours()) + 'h' + moment.utc(duration.asMilliseconds()).format("mm"),
-                responsible: config.info.companyResponsible,
-                sortIndex: entry.created // Date et heure de création
-            });
+            date: moment(task.dateStarted).format('DD.MM.YYYY'),
+            title: task.issue.key.substr(0, task.issue.key.indexOf('-')) + ' : ' + task.issue.summary,
+            description: task.comment.split('\n').map((line) => {return {line: line}}),
+            //duration: moment.duration(entry.timeSpent*1000).humanize(),
+            duration: Math.floor(duration.asHours()) + 'h' + moment.utc(duration.asMilliseconds()).format("mm"),
+            responsible: config.info.companyResponsible,
+            sortIndex: moment(task.startDate).format('x')
         });
     });
     
